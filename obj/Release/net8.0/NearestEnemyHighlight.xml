@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>NearestEnemyHighlight</name>
+    </assembly>
+    <members>
+        <member name="T:NearestEnemyHighlight.CursorRule">
+            <summary>
+            Represents a single cursor-based enemy detection rule.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.CursorRule.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NearestEnemyHighlight.CursorRule"/> class.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.CursorRule.#ctor(NearestEnemyHighlight.CursorRule)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NearestEnemyHighlight.CursorRule"/> class.
+            Copy constructor for cloning rules.
+            </summary>
+            <param name="other">Rule to copy from.</param>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.Enabled">
+            <summary>
+            Gets or sets a value indicating whether this rule is enabled.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.Name">
+            <summary>
+            Gets or sets the user-friendly name for this rule.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.Key">
+            <summary>
+            Gets or sets the key to spam when enemies are detected.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.SpamDelayMs">
+            <summary>
+            Gets or sets the delay in milliseconds between key presses.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.DetectionRadiusPixels">
+            <summary>
+            Gets or sets the detection radius around the cursor in screen pixels.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.ShowVisualRadius">
+            <summary>
+            Gets or sets a value indicating whether to draw the detection radius around the cursor.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.CanSpamKey">
+            <summary>
+            Gets a value indicating whether enough time has passed to allow another key press.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.CursorRule.MarkKeyPressed">
+            <summary>
+            Marks that a key was just pressed, resetting the spam timer.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.CursorRule.CreateDefault">
+            <summary>
+            Creates a default rule setup for testing.
+            </summary>
+            <returns>A preconfigured cursor rule.</returns>
+        </member>
+        <member name="T:NearestEnemyHighlight.MouseCompatibilityHelper">
+            <summary>
+            Mouse cursor operations service for GameHelper plugins.
+            Provides safe mouse cursor control using Win32 APIs.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.MouseCompatibilityHelper.SnapCursorTo(System.Int32,System.Int32)">
+            <summary>
+            Snaps the mouse cursor to the specified screen coordinates.
+            Includes safety checks for controller mode and process validation.
+            </summary>
+            <param name="x">X screen coordinate.</param>
+            <param name="y">Y screen coordinate.</param>
+            <returns>True if cursor was moved successfully.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.MouseCompatibilityHelper.GetCursorPosition">
+            <summary>
+            Gets the current mouse cursor position.
+            </summary>
+            <returns>Current cursor position, or zero if failed.</returns>
+        </member>
+        <member name="T:NearestEnemyHighlight.NearestEnemyCore">
+            <summary>
+            Nearest Enemy Highlight plugin that draws a circle around the closest enemy.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NearestEnemyHighlight.NearestEnemyCore"/> class.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.OnEnable(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.OnDisable">
+            <inheritdoc/>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawSettings">
+            <inheritdoc/>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawUI">
+            <inheritdoc/>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.SaveSettings">
+            <inheritdoc/>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.LoadSettings">
+            <summary>
+            Loads settings from file if it exists.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.IsGameRunning">
+            <summary>
+            Checks if the game is running and player exists.
+            </summary>
+            <returns>True if game is running with valid player.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.FindNearestEnemy">
+            <summary>
+            Finds the nearest enemy within the search distance.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.FindEnemiesAroundCursor(System.Single)">
+            <summary>
+            Finds enemies within the specified radius around the mouse cursor.
+            </summary>
+            <param name="radiusPixels">Detection radius in screen pixels.</param>
+            <returns>List of entities within the cursor radius.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.ExecuteCursorRules">
+            <summary>
+            Executes all active cursor rules, spamming keys when enemies are detected.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawCursorRuleRadii">
+            <summary>
+            Draws visual radius circles around the cursor for enabled rules.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawCircleAroundEnemy">
+            <summary>
+            Draws a circle around the nearest enemy on screen.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawDebugInfo">
+            <summary>
+            Draws debug information on screen.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.IsUIActive">
+            <summary>
+            Checks if the UI is currently active and cursor tracking should be paused.
+            </summary>
+            <returns>True if UI is active and tracking should pause.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.SnapCursorToNearestEnemy">
+            <summary>
+            Snaps the cursor to the nearest enemy's screen position.
+            </summary>
+        </member>
+        <member name="T:NearestEnemyHighlight.NearestEnemySettings">
+            <summary>
+            Settings for the Nearest Enemy Highlight plugin.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.Enable">
+            <summary>
+            Gets or sets a value indicating whether the plugin is enabled.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.MaxSearchDistance">
+            <summary>
+            Gets or sets the maximum distance to search for enemies.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CircleRadius">
+            <summary>
+            Gets or sets the radius of the circle drawn around the nearest enemy.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CircleThickness">
+            <summary>
+            Gets or sets the thickness of the circle line.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CircleColorR">
+            <summary>
+            Gets or sets the red component of the circle color (0-255).
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CircleColorG">
+            <summary>
+            Gets or sets the green component of the circle color (0-255).
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CircleColorB">
+            <summary>
+            Gets or sets the blue component of the circle color (0-255).
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CircleColorA">
+            <summary>
+            Gets or sets the alpha component of the circle color (0-255).
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.ShowDebugInfo">
+            <summary>
+            Gets or sets a value indicating whether to show debug information.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.EnableCursorTracking">
+            <summary>
+            Gets or sets a value indicating whether cursor tracking is enabled.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.PauseDuringUI">
+            <summary>
+            Gets or sets a value indicating whether to pause cursor tracking during UI interactions.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.ToggleHotKey">
+            <summary>
+            Gets or sets the hotkey for toggling cursor tracking.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.CursorRules">
+            <summary>
+            Gets or sets the list of cursor-based detection rules.
+            </summary>
+        </member>
+    </members>
+</doc>
