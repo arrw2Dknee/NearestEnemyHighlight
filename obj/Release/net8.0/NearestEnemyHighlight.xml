@@ -51,9 +51,39 @@
             Gets or sets a value indicating whether to draw the detection radius around the cursor.
             </summary>
         </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.UseKeySequence">
+            <summary>
+            Gets or sets a value indicating whether to use key sequence instead of single key.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.SequenceCooldownMs">
+            <summary>
+            Gets or sets the cooldown in milliseconds for sequence execution.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.Priority">
+            <summary>
+            Gets or sets the priority of this rule (1-999, higher number = higher priority).
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.KeySequence">
+            <summary>
+            Gets or sets the key sequence to execute when enemies are detected.
+            </summary>
+        </member>
         <member name="P:NearestEnemyHighlight.CursorRule.CanSpamKey">
             <summary>
             Gets a value indicating whether enough time has passed to allow another key press.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.CanExecuteSequence">
+            <summary>
+            Gets a value indicating whether enough time has passed to allow sequence execution.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.CursorRule.SequenceCooldownRemainingMs">
+            <summary>
+            Gets the remaining sequence cooldown time in milliseconds for debug display.
             </summary>
         </member>
         <member name="M:NearestEnemyHighlight.CursorRule.MarkKeyPressed">
@@ -61,11 +91,272 @@
             Marks that a key was just pressed, resetting the spam timer.
             </summary>
         </member>
+        <member name="M:NearestEnemyHighlight.CursorRule.MarkSequenceCompleted">
+            <summary>
+            Marks that a sequence execution has completed, resetting the sequence cooldown timer.
+            </summary>
+        </member>
         <member name="M:NearestEnemyHighlight.CursorRule.CreateDefault">
             <summary>
             Creates a default rule setup for testing.
             </summary>
             <returns>A preconfigured cursor rule.</returns>
+        </member>
+        <member name="T:NearestEnemyHighlight.KeyAction">
+            <summary>
+            Represents a single key action with an optional delay before execution
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeyAction.Key">
+            <summary>
+            The main key to press
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeyAction.DelayMs">
+            <summary>
+            Delay in milliseconds before pressing this key (default 0)
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeyAction.UseCtrl">
+            <summary>
+            Whether to hold CTRL modifier
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeyAction.UseAlt">
+            <summary>
+            Whether to hold ALT modifier
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeyAction.UseShift">
+            <summary>
+            Whether to hold SHIFT modifier
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeyAction.UseWin">
+            <summary>
+            Whether to hold WINDOWS modifier
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeyAction.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NearestEnemyHighlight.KeyAction"/> class.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeyAction.#ctor(ClickableTransparentOverlay.Win32.VK,System.Int32,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:NearestEnemyHighlight.KeyAction"/> class.
+            </summary>
+            <param name="key">The key to press</param>
+            <param name="delayMs">Delay in milliseconds before pressing this key</param>
+            <param name="useCtrl">Whether to hold CTRL</param>
+            <param name="useAlt">Whether to hold ALT</param>
+            <param name="useShift">Whether to hold SHIFT</param>
+            <param name="useWin">Whether to hold WIN</param>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeyAction.#ctor(NearestEnemyHighlight.KeyAction)">
+            <summary>
+            Copy constructor
+            </summary>
+            <param name="other">KeyAction to copy from</param>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeyAction.GetDisplayString">
+            <summary>
+            Gets a display string representation of this key action
+            </summary>
+            <returns>String like "CTRL+X" or just "F" for single keys</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeyAction.Execute">
+            <summary>
+            Executes this key action (presses the key with modifiers)
+            </summary>
+            <returns>True if successful</returns>
+        </member>
+        <member name="T:NearestEnemyHighlight.KeybindCapture">
+            <summary>
+            Helper class for capturing key combinations from user input
+            </summary>
+        </member>
+        <member name="T:NearestEnemyHighlight.KeybindCapture.KeyCaptureState">
+            <summary>
+            Represents the state of a key capture session
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeybindCapture.DrawKeybindCapture(System.Int32,NearestEnemyHighlight.KeyAction,System.String)">
+            <summary>
+            Draws a keybind capture interface
+            </summary>
+            <param name="id">Unique identifier for this capture session</param>
+            <param name="currentAction">Current KeyAction to modify</param>
+            <param name="buttonText">Text to show on the capture button</param>
+            <returns>True if the keybind was updated</returns>
+        </member>
+        <member name="T:NearestEnemyHighlight.KeySequence">
+            <summary>
+            Represents a sequence of key actions to be executed in order
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeySequence.Actions">
+            <summary>
+            List of key actions to execute in sequence
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeySequence.IsExecuting">
+            <summary>
+            Gets a value indicating whether the sequence is currently executing
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeySequence.HasActions">
+            <summary>
+            Gets a value indicating whether this sequence has any actions
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.KeySequence.IsCancelled">
+            <summary>
+            Gets a value indicating whether the sequence execution was cancelled
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:NearestEnemyHighlight.KeySequence"/> class.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.#ctor(NearestEnemyHighlight.KeySequence)">
+            <summary>
+            Copy constructor
+            </summary>
+            <param name="other">KeySequence to copy from</param>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.GetSummary">
+            <summary>
+            Gets a summary string of the sequence
+            </summary>
+            <returns>String describing the sequence</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.Cancel">
+            <summary>
+            Cancels the currently executing sequence
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.Execute(System.Action{System.String},System.Action)">
+            <summary>
+            Executes the key sequence asynchronously
+            </summary>
+            <param name="logger">Optional logger for debugging</param>
+            <param name="onCompleted">Callback to execute when sequence completes</param>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.AddAction(NearestEnemyHighlight.KeyAction)">
+            <summary>
+            Adds a new key action to the sequence
+            </summary>
+            <param name="action">KeyAction to add</param>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.RemoveAction(System.Int32)">
+            <summary>
+            Removes a key action at the specified index
+            </summary>
+            <param name="index">Index to remove</param>
+        </member>
+        <member name="M:NearestEnemyHighlight.KeySequence.Clear">
+            <summary>
+            Clears all actions from the sequence
+            </summary>
+        </member>
+        <member name="T:NearestEnemyHighlight.LineOfSightDebugInfo">
+            <summary>
+            Contains debug information about line-of-sight calculation.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.HasLineOfSight">
+            <summary>
+            Gets or sets a value indicating whether line of sight exists.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.BlockedPositions">
+            <summary>
+            Gets or sets the positions of blocked tiles along the path.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.PathPositions">
+            <summary>
+            Gets or sets all positions checked along the path.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.BlockedTileCount">
+            <summary>
+            Gets or sets the number of blocked tiles encountered.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.ToleranceUsed">
+            <summary>
+            Gets or sets the tolerance value used for the check.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.StartGridPos">
+            <summary>
+            Gets or sets the start position in grid coordinates.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.LineOfSightDebugInfo.EndGridPos">
+            <summary>
+            Gets or sets the end position in grid coordinates.
+            </summary>
+        </member>
+        <member name="T:NearestEnemyHighlight.LineOfSightChecker">
+            <summary>
+            Utility class for checking line-of-sight between two points using terrain data.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.LineOfSightChecker.HasLineOfSight(GameHelper.RemoteObjects.States.InGameStateObjects.Entity,GameHelper.RemoteObjects.States.InGameStateObjects.Entity,System.Single)">
+            <summary>
+            Checks if there is a clear line of sight between player and target entity.
+            </summary>
+            <param name="playerEntity">The player entity.</param>
+            <param name="targetEntity">The target entity.</param>
+            <param name="tolerance">Number of non-walkable tiles to tolerate (0 = perfect LOS).</param>
+            <returns>True if line of sight exists within tolerance, false otherwise.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.LineOfSightChecker.HasLineOfSight(GameHelper.RemoteObjects.States.InGameStateObjects.Entity,GameHelper.RemoteObjects.States.InGameStateObjects.Entity,System.Single,NearestEnemyHighlight.LineOfSightDebugInfo@)">
+            <summary>
+            Checks if there is a clear line of sight between player and target entity, with debug information.
+            </summary>
+            <param name="playerEntity">The player entity.</param>
+            <param name="targetEntity">The target entity.</param>
+            <param name="tolerance">Number of non-walkable tiles to tolerate (0 = perfect LOS).</param>
+            <param name="debugInfo">Debug information about the line-of-sight check.</param>
+            <returns>True if line of sight exists within tolerance, false otherwise.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.LineOfSightChecker.HasLineOfSightGrid(System.Numerics.Vector2,System.Numerics.Vector2,System.Byte[],System.Int32,System.Single)">
+            <summary>
+            Checks line of sight between two grid positions using walkable data.
+            </summary>
+            <param name="start">Start grid position.</param>
+            <param name="end">End grid position.</param>
+            <param name="walkableData">Terrain walkable data array.</param>
+            <param name="bytesPerRow">Bytes per row in walkable data.</param>
+            <param name="tolerance">Number of non-walkable tiles to tolerate.</param>
+            <returns>True if line of sight exists within tolerance.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.LineOfSightChecker.HasLineOfSightGridWithDebug(System.Numerics.Vector2,System.Numerics.Vector2,System.Byte[],System.Int32,System.Single,NearestEnemyHighlight.LineOfSightDebugInfo)">
+            <summary>
+            Checks line of sight between two grid positions using walkable data, collecting debug information.
+            </summary>
+            <param name="start">Start grid position.</param>
+            <param name="end">End grid position.</param>
+            <param name="walkableData">Terrain walkable data array.</param>
+            <param name="bytesPerRow">Bytes per row in walkable data.</param>
+            <param name="tolerance">Number of non-walkable tiles to tolerate.</param>
+            <param name="debugInfo">Debug information to populate.</param>
+            <returns>True if line of sight exists within tolerance.</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.LineOfSightChecker.IsWalkable(System.Int32,System.Int32,System.Byte[],System.Int32)">
+            <summary>
+            Checks if a specific grid tile is walkable.
+            </summary>
+            <param name="gridX">Grid X coordinate.</param>
+            <param name="gridY">Grid Y coordinate.</param>
+            <param name="walkableData">Terrain walkable data array.</param>
+            <param name="bytesPerRow">Bytes per row in walkable data.</param>
+            <returns>True if the tile is walkable, false otherwise.</returns>
         </member>
         <member name="T:NearestEnemyHighlight.MouseCompatibilityHelper">
             <summary>
@@ -151,6 +442,11 @@
             Draws a circle around the nearest enemy on screen.
             </summary>
         </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawLineOfSightDebug">
+            <summary>
+            Draws line-of-sight debug visualization.
+            </summary>
+        </member>
         <member name="M:NearestEnemyHighlight.NearestEnemyCore.DrawDebugInfo">
             <summary>
             Draws debug information on screen.
@@ -166,6 +462,29 @@
             <summary>
             Snaps the cursor to the nearest enemy's screen position.
             </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.ClearExecutingRule">
+            <summary>
+            Clears the currently executing rule tracking.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.ShouldExecuteRule(NearestEnemyHighlight.CursorRule)">
+            <summary>
+            Determines if a rule should execute based on priority conflicts.
+            </summary>
+            <param name="rule">The rule that wants to execute</param>
+            <returns>True if the rule should execute, false if it should be skipped</returns>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.InterruptCurrentRule">
+            <summary>
+            Interrupts the currently executing rule.
+            </summary>
+        </member>
+        <member name="M:NearestEnemyHighlight.NearestEnemyCore.SetExecutingRule(NearestEnemyHighlight.CursorRule)">
+            <summary>
+            Sets the currently executing rule for tracking.
+            </summary>
+            <param name="rule">The rule that is starting execution</param>
         </member>
         <member name="T:NearestEnemyHighlight.NearestEnemySettings">
             <summary>
@@ -235,6 +554,21 @@
         <member name="P:NearestEnemyHighlight.NearestEnemySettings.CursorRules">
             <summary>
             Gets or sets the list of cursor-based detection rules.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.EnableLineOfSight">
+            <summary>
+            Gets or sets a value indicating whether line-of-sight checking is enabled.
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.LineOfSightTolerance">
+            <summary>
+            Gets or sets the line-of-sight tolerance (0 = perfect LOS, higher = allows more obstacles).
+            </summary>
+        </member>
+        <member name="P:NearestEnemyHighlight.NearestEnemySettings.ShowLineOfSightDebug">
+            <summary>
+            Gets or sets a value indicating whether to show line-of-sight debug visualization.
             </summary>
         </member>
     </members>

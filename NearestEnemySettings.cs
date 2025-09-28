@@ -78,5 +78,20 @@ namespace NearestEnemyHighlight
         /// Gets or sets the list of cursor-based detection rules.
         /// </summary>
         public List<CursorRule> CursorRules { get; set; } = new List<CursorRule>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether line-of-sight checking is enabled.
+        /// </summary>
+        public bool EnableLineOfSight { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the line-of-sight tolerance (0 = perfect LOS, higher = allows more obstacles).
+        /// </summary>
+        public float LineOfSightTolerance { get; set; } = 2.0f;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show line-of-sight debug visualization.
+        /// </summary>
+        public bool ShowLineOfSightDebug { get; set; } = false;
     }
 }

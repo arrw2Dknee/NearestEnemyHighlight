@@ -20,6 +20,8 @@ namespace NearestEnemyHighlight
 
     using System.Collections.Generic;
 
+    using System.Threading.Tasks;
+
     /// <summary>
     /// Nearest Enemy Highlight plugin that draws a circle around the closest enemy.
     /// </summary>
@@ -30,6 +32,10 @@ namespace NearestEnemyHighlight
         private string settingsPath;
 
         private int selectedRuleIndex = -1; // For UI rule management
+        private CursorRule currentExecutingRule = null;
+        private int currentExecutingPriority = 0;
+
+        private LineOfSightDebugInfo lastLOSDebugInfo = null; // Debug info for visualization
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NearestEnemyCore"/> class.
@@ -118,6 +124,32 @@ namespace NearestEnemyHighlight
                 this.Settings.ShowDebugInfo = showDebug;
 
             ImGui.Separator();
+            ImGui.Text("Line-of-Sight Settings");
+
+            // Line-of-sight enable/disable
+            bool enableLOS = this.Settings.EnableLineOfSight;
+            if (ImGui.Checkbox("Enable Line-of-Sight Checking", ref enableLOS))
+                this.Settings.EnableLineOfSight = enableLOS;
+            ImGuiHelper.ToolTip("Only target enemies with clear line of sight (no walls blocking)");
+
+            // Tolerance setting (only show if LOS is enabled)
+            if (this.Settings.EnableLineOfSight)
+            {
+                float tolerance = this.Settings.LineOfSightTolerance;
+                if (ImGui.DragFloat("LOS Tolerance", ref tolerance, 0.1f, 0.0f, 5.0f, "%.1f"))
+                {
+                    this.Settings.LineOfSightTolerance = Math.Max(0.0f, Math.Min(5.0f, tolerance));
+                }
+                ImGuiHelper.ToolTip("Number of obstacles to tolerate (0 = perfect LOS, higher = more forgiving)");
+
+                // Debug visualization toggle
+                bool losDebug = this.Settings.ShowLineOfSightDebug;
+                if (ImGui.Checkbox("Show LOS Debug Lines", ref losDebug))
+                    this.Settings.ShowLineOfSightDebug = losDebug;
+                ImGuiHelper.ToolTip("Draw debug lines showing line-of-sight paths");
+            }
+
+            ImGui.Separator();
             ImGui.Text("Cursor Tracking:");
 
             bool enableTracking = this.Settings.EnableCursorTracking;
@@ -180,6 +212,16 @@ namespace NearestEnemyHighlight
                 }
                 ImGui.SameLine();
 
+                // Priority input
+                int priority = rule.Priority;
+                ImGui.SetNextItemWidth(80);
+                if (ImGui.DragInt("Priority", ref priority, 1.0f, 1, 999))
+                {
+                    rule.Priority = Math.Max(1, Math.Min(999, priority));
+                }
+                ImGuiHelper.ToolTip("Rule priority (1-999). Higher number = higher priority. Higher priority rules interrupt lower priority ones.");
+                ImGui.SameLine();
+
                 // Delete button
                 if (ImGui.Button("Delete"))
                 {
@@ -191,21 +233,103 @@ namespace NearestEnemyHighlight
                 // FIXED: Always show configuration controls (removed if condition)
                 ImGui.Indent();
 
-                // Key selection
-                VK key = rule.Key;
-                if (ImGuiHelper.NonContinuousEnumComboBox("Key to Spam", ref key))
+                // Key mode selection
+                bool useKeySequence = rule.UseKeySequence;
+                if (ImGui.Checkbox("Use Key Sequence (Combo)", ref useKeySequence))
                 {
-                    rule.Key = key;
+                    rule.UseKeySequence = useKeySequence;
                 }
-                ImGuiHelper.ToolTip("Key that will be pressed when enemies are detected within radius");
+                ImGuiHelper.ToolTip("Enable this to use a sequence of keys with delays instead of a single key");
 
-                // UPDATED: Spam delay with precise input
-                float delay = rule.SpamDelayMs;
-                if (ImGui.DragFloat("Spam Delay (ms)", ref delay, 1.0f, 50.0f, 2000.0f, "%.0f"))
+                if (rule.UseKeySequence)
                 {
-                    rule.SpamDelayMs = Math.Max(50.0f, Math.Min(2000.0f, delay));
+                    // Key sequence configuration
+                    ImGui.Text("Key Sequence:");
+                    ImGui.Indent();
+
+                    // Show current sequence
+                    if (rule.KeySequence.HasActions)
+                    {
+                        for (int j = 0; j < rule.KeySequence.Actions.Count; j++)
+                        {
+                            var action = rule.KeySequence.Actions[j];
+                            ImGui.PushID($"action_{i}_{j}");
+
+                            // Action display and controls
+                            ImGui.Text($"{j + 1}.");
+                            ImGui.SameLine();
+
+                            // Use keybind capture for setting key
+                            if (KeybindCapture.DrawKeybindCapture(i * 1000 + j, action, action.GetDisplayString()))
+                            {
+                                // Key was updated by capture
+                            }
+
+                            ImGui.SameLine();
+
+                            // Delay input
+                            int actionDelay = action.DelayMs;
+                            ImGui.SetNextItemWidth(80);
+                            if (ImGui.DragInt("ms", ref actionDelay, 1.0f, 0, 5000))
+                            {
+                                action.DelayMs = Math.Max(0, Math.Min(5000, actionDelay));
+                            }
+
+                            ImGui.SameLine();
+
+                            // Remove button
+                            if (ImGui.Button($"Remove##action_{j}"))
+                            {
+                                rule.KeySequence.RemoveAction(j);
+                                ImGui.PopID();
+                                break;
+                            }
+
+                            ImGui.PopID();
+                        }
+                    }
+                    else
+                    {
+                        ImGui.Text("No actions in sequence");
+                    }
+
+                    // Sequence cooldown setting
+                    ImGui.Separator();
+                    float sequenceCooldown = rule.SequenceCooldownMs;
+                    if (ImGui.DragFloat("Sequence Cooldown (ms)", ref sequenceCooldown, 10.0f, 0.0f, 25000.0f, "%.0f"))
+                    {
+                        rule.SequenceCooldownMs = Math.Max(0.0f, Math.Min(25000.0f, sequenceCooldown));
+                    }
+                    ImGuiHelper.ToolTip("Time to wait after sequence completes before it can trigger again. 1000ms = 1 second. Click to type exact value.");
+
+                    // Add new action button
+                    if (ImGui.Button($"Add Action##rule_{i}"))
+                    {
+                        rule.KeySequence.AddAction(new KeyAction(VK.KEY_Q, 100));
+                    }
                 }
-                ImGuiHelper.ToolTip("Time to wait between key presses (lower = faster spam). Click to type exact value.");
+                else
+                {
+                    // Single key configuration (existing behavior)
+                    VK key = rule.Key;
+                    if (ImGuiHelper.NonContinuousEnumComboBox("Key to Spam", ref key))
+                    {
+                        rule.Key = key;
+                    }
+                    ImGuiHelper.ToolTip("Key that will be pressed when enemies are detected within radius");
+                }
+
+                // Show spam delay only for single key mode
+                if (!rule.UseKeySequence)
+                {
+                    // UPDATED: Spam delay with precise input
+                    float delay = rule.SpamDelayMs;
+                    if (ImGui.DragFloat("Spam Delay (ms)", ref delay, 1.0f, 50.0f, 2000.0f, "%.0f"))
+                    {
+                        rule.SpamDelayMs = Math.Max(50.0f, Math.Min(2000.0f, delay));
+                    }
+                    ImGuiHelper.ToolTip("Time to wait between key presses (lower = faster spam). Click to type exact value.");
+                }
 
                 // UPDATED: Detection radius with precise input
                 float radius = rule.DetectionRadiusPixels;
@@ -266,6 +390,12 @@ namespace NearestEnemyHighlight
             if (this.Settings.ShowDebugInfo)
             {
                 this.DrawDebugInfo();
+            }
+
+            // Draw line-of-sight debug visualization if enabled
+            if (this.Settings.ShowLineOfSightDebug && this.Settings.EnableLineOfSight)
+            {
+                this.DrawLineOfSightDebug();
             }
 
             // Handle hotkey toggle for cursor tracking (existing functionality)
@@ -340,6 +470,7 @@ namespace NearestEnemyHighlight
         {
             this.nearestEnemy = null;
             this.nearestDistance = float.MaxValue;
+            this.lastLOSDebugInfo = null; // Clear debug info when no enemy found
 
             try
             {
@@ -401,8 +532,28 @@ namespace NearestEnemyHighlight
                     // Check if this is the nearest enemy found so far
                     if (distance < this.nearestDistance)
                     {
-                        this.nearestDistance = distance;
-                        this.nearestEnemy = entity;
+                        // Check line of sight if enabled
+                        if (this.Settings.EnableLineOfSight)
+                        {
+                            LineOfSightDebugInfo debugInfo;
+                            if (LineOfSightChecker.HasLineOfSight(player, entity, this.Settings.LineOfSightTolerance, out debugInfo))
+                            {
+                                this.nearestDistance = distance;
+                                this.nearestEnemy = entity;
+                                // Store debug info for the nearest enemy (for visualization)
+                                if (this.Settings.ShowLineOfSightDebug)
+                                {
+                                    this.lastLOSDebugInfo = debugInfo;
+                                }
+                            }
+                            // If no line of sight, skip this enemy even if it's closer
+                        }
+                        else
+                        {
+                            // Line of sight disabled, use original behavior
+                            this.nearestDistance = distance;
+                            this.nearestEnemy = entity;
+                        }
                     }
                 }
             }
@@ -518,24 +669,75 @@ namespace NearestEnemyHighlight
                     return;
                 }
 
-                // Process each enabled rule
-                foreach (var rule in this.Settings.CursorRules.Where(r => r.Enabled))
+                // Process each enabled rule, sorted by priority (highest first)
+                foreach (var rule in this.Settings.CursorRules.Where(r => r.Enabled).OrderByDescending(r => r.Priority))
                 {
                     // Find enemies within this rule's radius
                     var enemiesInRadius = this.FindEnemiesAroundCursor(rule.DetectionRadiusPixels);
 
-                    // If enemies found and enough time has passed, spam the key
-                    if (enemiesInRadius.Count > 0 && rule.CanSpamKey)
+                    // If enemies found, check if rule should execute based on priority
+                    if (enemiesInRadius.Count > 0)
                     {
-                        // Use GameHelper's key spamming with built-in protection
-                        if (MiscHelper.KeyUp(rule.Key))
+                        if (rule.UseKeySequence && rule.KeySequence.HasActions)
                         {
-                            rule.MarkKeyPressed();
-
-                            // Optional: Add debug output
-                            if (this.Settings.ShowDebugInfo)
+                            // Execute key sequence if not executing, cooldown has elapsed, and priority allows
+                            if (!rule.KeySequence.IsExecuting && rule.CanExecuteSequence && this.ShouldExecuteRule(rule))
                             {
-                                Console.WriteLine($"Rule '{rule.Name}' pressed {rule.Key} - {enemiesInRadius.Count} enemies in radius");
+                                // Set this rule as executing
+                                this.SetExecutingRule(rule);
+
+                                if (this.Settings.ShowDebugInfo)
+                                {
+                                    Console.WriteLine($"Starting sequence for rule '{rule.Name}' (priority {rule.Priority})");
+                                }
+
+                                // Execute in a separate task to not block the main thread
+                                Task.Run(() => rule.KeySequence.Execute(
+                                    msg =>
+                                    {
+                                        if (this.Settings.ShowDebugInfo)
+                                        {
+                                            Console.WriteLine($"Rule '{rule.Name}' sequence: {msg}");
+                                        }
+                                    },
+                                    () =>
+                                    {
+                                        // Called when sequence completes
+                                        rule.MarkSequenceCompleted();
+                                        this.ClearExecutingRule();
+                                        if (this.Settings.ShowDebugInfo)
+                                        {
+                                            Console.WriteLine($"Rule '{rule.Name}' sequence completed, cooldown started");
+                                        }
+                                    }));
+
+                                // Only execute one rule per frame
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            // Execute single key with spam delay and priority check
+                            if (rule.CanSpamKey && this.ShouldExecuteRule(rule))
+                            {
+                                if (MiscHelper.KeyUp(rule.Key))
+                                {
+                                    // Set this rule as executing (for tracking, single keys complete immediately)
+                                    this.SetExecutingRule(rule);
+                                    rule.MarkKeyPressed();
+
+                                    // Clear execution tracking immediately for single keys
+                                    this.ClearExecutingRule();
+
+                                    // Optional: Add debug output
+                                    if (this.Settings.ShowDebugInfo)
+                                    {
+                                        Console.WriteLine($"Rule '{rule.Name}' pressed {rule.Key} (priority {rule.Priority}) - {enemiesInRadius.Count} enemies in radius");
+                                    }
+
+                                    // Only execute one rule per frame
+                                    break;
+                                }
                             }
                         }
                     }
@@ -664,6 +866,109 @@ namespace NearestEnemyHighlight
         }
 
         /// <summary>
+        /// Draws line-of-sight debug visualization.
+        /// </summary>
+        private void DrawLineOfSightDebug()
+        {
+            try
+            {
+                if (this.lastLOSDebugInfo == null || this.nearestEnemy == null || !this.nearestEnemy.IsValid)
+                {
+                    return;
+                }
+
+                var areaInstance = Core.States.InGameStateObject?.CurrentAreaInstance;
+                if (areaInstance == null)
+                {
+                    return;
+                }
+
+                // Get player render component for position
+                var player = areaInstance.Player;
+                if (!player.TryGetComponent<Render>(out var playerRender))
+                {
+                    return;
+                }
+
+                // Get target render component for position
+                if (!this.nearestEnemy.TryGetComponent<Render>(out var targetRender))
+                {
+                    return;
+                }
+
+                // Convert world positions to screen coordinates
+                var playerWorldPos = playerRender.WorldPosition;
+                var targetWorldPos = targetRender.WorldPosition;
+
+                var playerScreenPos = Core.States.InGameStateObject.CurrentWorldInstance.WorldToScreen(
+                    new Vector2(playerWorldPos.X, playerWorldPos.Y), playerWorldPos.Z);
+                var targetScreenPos = Core.States.InGameStateObject.CurrentWorldInstance.WorldToScreen(
+                    new Vector2(targetWorldPos.X, targetWorldPos.Y), targetWorldPos.Z);
+
+                // Check if positions are valid (on screen)
+                if (playerScreenPos == Vector2.Zero || targetScreenPos == Vector2.Zero)
+                {
+                    return;
+                }
+
+                var drawList = ImGui.GetBackgroundDrawList();
+
+                // Determine line color based on LOS status
+                uint lineColor;
+                if (this.lastLOSDebugInfo.HasLineOfSight)
+                {
+                    if (this.lastLOSDebugInfo.BlockedTileCount > 0)
+                    {
+                        // Yellow for tolerance-passed (some obstacles but within tolerance)
+                        lineColor = ImGuiHelper.Color(255, 255, 0, 200);
+                    }
+                    else
+                    {
+                        // Green for clear line of sight
+                        lineColor = ImGuiHelper.Color(0, 255, 0, 200);
+                    }
+                }
+                else
+                {
+                    // Red for blocked line of sight
+                    lineColor = ImGuiHelper.Color(255, 0, 0, 200);
+                }
+
+                // Draw main line from player to target
+                drawList.AddLine(playerScreenPos, targetScreenPos, lineColor, 2.0f);
+
+                // Draw blocked positions as small red dots
+                if (this.lastLOSDebugInfo.BlockedPositions.Count > 0)
+                {
+                    var gridConverter = areaInstance.WorldToGridConvertor;
+                    var blockedColor = ImGuiHelper.Color(255, 0, 0, 255);
+
+                    foreach (var blockedGridPos in this.lastLOSDebugInfo.BlockedPositions)
+                    {
+                        // Convert grid position back to world position
+                        var blockedWorldPos = new Vector2(
+                            blockedGridPos.X * gridConverter,
+                            blockedGridPos.Y * gridConverter);
+
+                        // Convert world position to screen position
+                        var blockedScreenPos = Core.States.InGameStateObject.CurrentWorldInstance.WorldToScreen(
+                            blockedWorldPos, playerWorldPos.Z); // Use player height as reference
+
+                        if (blockedScreenPos != Vector2.Zero)
+                        {
+                            // Draw small filled circle at blocked position
+                            drawList.AddCircleFilled(blockedScreenPos, 3.0f, blockedColor);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error drawing LOS debug: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Draws debug information on screen.
         /// </summary>
         private void DrawDebugInfo()
@@ -766,15 +1071,46 @@ namespace NearestEnemyHighlight
                 if (this.Settings.CursorRules != null && this.Settings.CursorRules.Count > 0)
                 {
                     ImGui.Separator();
+                    // Show current execution info
+                    if (this.currentExecutingRule != null)
+                    {
+                        ImGui.TextColored(new Vector4(1, 1, 0, 1), $"Currently Executing: {this.currentExecutingRule.Name} (Priority {this.currentExecutingPriority})");
+                    }
+                    else
+                    {
+                        ImGui.Text("Currently Executing: None");
+                    }
                     ImGui.Text("Rule Status:");
                     foreach (var rule in this.Settings.CursorRules)
                     {
                         if (rule.Enabled)
                         {
                             var enemiesInRadius = this.FindEnemiesAroundCursor(rule.DetectionRadiusPixels);
-                            ImGui.TextColored(
-                                new Vector4(0, 1, 0, 1),
-                                $"{rule.Name} ({rule.Key}): {enemiesInRadius.Count} enemies, Ready: {rule.CanSpamKey}");
+
+                            // Determine if this rule is currently executing
+                            bool isCurrentlyExecuting = this.currentExecutingRule == rule;
+                            var textColor = isCurrentlyExecuting ? new Vector4(1, 1, 0, 1) : new Vector4(0, 1, 0, 1); // Yellow if executing, green if not
+
+                            if (rule.UseKeySequence)
+                            {
+                                string sequenceStatus = rule.CanExecuteSequence ? "Ready" :
+                                    $"Cooldown: {rule.SequenceCooldownRemainingMs:F0}ms";
+
+                                string executingStatus = isCurrentlyExecuting ? " [EXECUTING]" : "";
+
+                                ImGui.TextColored(
+                                    textColor,
+                                    $"{rule.Name} (Sequence, P{rule.Priority}): {enemiesInRadius.Count} enemies, {sequenceStatus}{executingStatus}");
+                            }
+                            else
+                            {
+                                string readyStatus = rule.CanSpamKey ? "Ready" : "Spam Cooldown";
+                                string executingStatus = isCurrentlyExecuting ? " [EXECUTING]" : "";
+
+                                ImGui.TextColored(
+                                    textColor,
+                                    $"{rule.Name} ({rule.Key}, P{rule.Priority}): {enemiesInRadius.Count} enemies, {readyStatus}{executingStatus}");
+                            }
                         }
                         else
                         {
@@ -782,6 +1118,42 @@ namespace NearestEnemyHighlight
                                 new Vector4(0.5f, 0.5f, 0.5f, 1),
                                 $"{rule.Name} ({rule.Key}): Disabled");
                         }
+                    }
+                }
+
+                // Line-of-sight debug information
+                if (this.Settings.EnableLineOfSight)
+                {
+                    ImGui.Separator();
+                    ImGui.Text("Line-of-Sight Debug:");
+
+                    if (this.lastLOSDebugInfo != null)
+                    {
+                        ImGui.Text($"LOS Status: {(this.lastLOSDebugInfo.HasLineOfSight ? "CLEAR" : "BLOCKED")}");
+                        ImGui.Text($"Blocked Tiles: {this.lastLOSDebugInfo.BlockedTileCount}");
+                        ImGui.Text($"Tolerance: {this.lastLOSDebugInfo.ToleranceUsed:F1}");
+                        ImGui.Text($"Path Length: {this.lastLOSDebugInfo.PathPositions.Count} tiles");
+
+                        // Color-coded status
+                        if (this.lastLOSDebugInfo.HasLineOfSight)
+                        {
+                            if (this.lastLOSDebugInfo.BlockedTileCount > 0)
+                            {
+                                ImGui.TextColored(new Vector4(1.0f, 1.0f, 0.0f, 1.0f), "Status: TOLERANCE PASS");
+                            }
+                            else
+                            {
+                                ImGui.TextColored(new Vector4(0.0f, 1.0f, 0.0f, 1.0f), "Status: CLEAR PATH");
+                            }
+                        }
+                        else
+                        {
+                            ImGui.TextColored(new Vector4(1.0f, 0.0f, 0.0f, 1.0f), "Status: PATH BLOCKED");
+                        }
+                    }
+                    else
+                    {
+                        ImGui.Text("No LOS data available");
                     }
                 }
 
@@ -852,6 +1224,73 @@ namespace NearestEnemyHighlight
             {
                 Console.WriteLine($"Error snapping cursor to enemy: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Clears the currently executing rule tracking.
+        /// </summary>
+        private void ClearExecutingRule()
+        {
+            this.currentExecutingRule = null;
+            this.currentExecutingPriority = 0;
+        }
+
+        /// <summary>
+        /// Determines if a rule should execute based on priority conflicts.
+        /// </summary>
+        /// <param name="rule">The rule that wants to execute</param>
+        /// <returns>True if the rule should execute, false if it should be skipped</returns>
+        private bool ShouldExecuteRule(CursorRule rule)
+        {
+            // If no rule is currently executing, new rule can execute
+            if (this.currentExecutingRule == null)
+            {
+                return true;
+            }
+
+            // If new rule has higher priority OR same priority, it should interrupt current rule
+            if (rule.Priority >= this.currentExecutingPriority)
+            {
+                // Interrupt current rule
+                this.InterruptCurrentRule();
+                return true;
+            }
+
+            // New rule has lower priority, skip it
+            return false;
+        }
+
+        /// <summary>
+        /// Interrupts the currently executing rule.
+        /// </summary>
+        private void InterruptCurrentRule()
+        {
+            if (this.currentExecutingRule == null)
+                return;
+
+            if (this.Settings.ShowDebugInfo)
+            {
+                Console.WriteLine($"Interrupting rule '{this.currentExecutingRule.Name}' (priority {this.currentExecutingPriority})");
+            }
+
+            // Cancel sequence if it's running
+            if (this.currentExecutingRule.UseKeySequence && this.currentExecutingRule.KeySequence.IsExecuting)
+            {
+                this.currentExecutingRule.KeySequence.Cancel();
+            }
+
+            // Clear tracking immediately
+            this.ClearExecutingRule();
+        }
+
+        /// <summary>
+        /// Sets the currently executing rule for tracking.
+        /// </summary>
+        /// <param name="rule">The rule that is starting execution</param>
+        private void SetExecutingRule(CursorRule rule)
+        {
+            this.currentExecutingRule = rule;
+            this.currentExecutingPriority = rule.Priority;
         }
     }
 }

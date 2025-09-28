@@ -15,6 +15,7 @@ namespace NearestEnemyHighlight
     public class CursorRule
     {
         private readonly Stopwatch spamTimer;
+        private readonly Stopwatch sequenceCooldownTimer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CursorRule"/> class.
@@ -28,6 +29,11 @@ namespace NearestEnemyHighlight
             this.DetectionRadiusPixels = 150.0f;
             this.ShowVisualRadius = false;
             this.Enabled = false;
+            this.UseKeySequence = false;
+            this.KeySequence = new KeySequence();
+            this.sequenceCooldownTimer = Stopwatch.StartNew();
+            this.SequenceCooldownMs = 0.0f;
+            this.Priority = 1;
         }
 
         /// <summary>
@@ -44,6 +50,11 @@ namespace NearestEnemyHighlight
             this.DetectionRadiusPixels = other.DetectionRadiusPixels;
             this.ShowVisualRadius = other.ShowVisualRadius;
             this.Enabled = false; // New rule starts disabled
+            this.UseKeySequence = other.UseKeySequence;
+            this.KeySequence = new KeySequence(other.KeySequence);
+            this.sequenceCooldownTimer = Stopwatch.StartNew();
+            this.SequenceCooldownMs = other.SequenceCooldownMs;
+            this.Priority = other.Priority;
         }
 
         /// <summary>
@@ -77,10 +88,44 @@ namespace NearestEnemyHighlight
         public bool ShowVisualRadius { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to use key sequence instead of single key.
+        /// </summary>
+        [JsonProperty]
+        public bool UseKeySequence { get; set; }
+
+        /// <summary>
+        /// Gets or sets the cooldown in milliseconds for sequence execution.
+        /// </summary>
+        public float SequenceCooldownMs { get; set; }
+
+        /// <summary>
+        /// Gets or sets the priority of this rule (1-999, higher number = higher priority).
+        /// </summary>
+        public int Priority { get; set; }
+
+        /// <summary>
+        /// Gets or sets the key sequence to execute when enemies are detected.
+        /// </summary>
+        [JsonProperty]
+        public KeySequence KeySequence { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether enough time has passed to allow another key press.
         /// </summary>
         [JsonIgnore]
         public bool CanSpamKey => this.spamTimer.ElapsedMilliseconds >= this.SpamDelayMs;
+
+        /// <summary>
+        /// Gets a value indicating whether enough time has passed to allow sequence execution.
+        /// </summary>
+        [JsonIgnore]
+        public bool CanExecuteSequence => this.sequenceCooldownTimer.ElapsedMilliseconds >= this.SequenceCooldownMs;
+
+        /// <summary>
+        /// Gets the remaining sequence cooldown time in milliseconds for debug display.
+        /// </summary>
+        [JsonIgnore]
+        public float SequenceCooldownRemainingMs => Math.Max(0, this.SequenceCooldownMs - this.sequenceCooldownTimer.ElapsedMilliseconds);
 
         /// <summary>
         /// Marks that a key was just pressed, resetting the spam timer.
@@ -88,6 +133,14 @@ namespace NearestEnemyHighlight
         public void MarkKeyPressed()
         {
             this.spamTimer.Restart();
+        }
+
+        /// <summary>
+        /// Marks that a sequence execution has completed, resetting the sequence cooldown timer.
+        /// </summary>
+        public void MarkSequenceCompleted()
+        {
+            this.sequenceCooldownTimer.Restart();
         }
 
         /// <summary>
@@ -103,7 +156,11 @@ namespace NearestEnemyHighlight
                 SpamDelayMs = 200.0f,        // More reasonable default delay
                 DetectionRadiusPixels = 120.0f,  // Reasonable default radius
                 ShowVisualRadius = true,     // Show radius by default for new users
-                Enabled = false              // Start disabled so user can configure first
+                Enabled = false,              // Start disabled so user can configure first
+                UseKeySequence = false,              // Start with single key mode
+                KeySequence = new KeySequence(),     // Initialize empty sequence
+                SequenceCooldownMs = 0.0f,       // Default 1 second sequence cooldown
+                Priority = 1,                     // Default medium priority
             };
         }
     }

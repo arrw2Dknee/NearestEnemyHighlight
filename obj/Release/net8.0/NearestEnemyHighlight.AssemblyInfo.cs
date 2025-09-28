@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NearestEnemyHighlight")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b314741096071f306ef8e170de3b0c0302b341da")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0a1a2af1ef8eb9234a7b6277349f8e97076273c6")]
 [assembly: System.Reflection.AssemblyProductAttribute("NearestEnemyHighlight")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NearestEnemyHighlight")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
