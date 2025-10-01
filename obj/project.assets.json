@@ -312,6 +312,299 @@
           "bin/placeholder/GameOffsets.dll": {}
         }
       }
+    },
+    "net8.0/win-x64": {
+      "ClickableTransparentOverlay/11.1.0": {
+        "type": "package",
+        "dependencies": {
+          "ImGui.NET": "1.91.6.1",
+          "SixLabors.ImageSharp": "3.1.6",
+          "Vortice.D3DCompiler": "3.5.0",
+          "Vortice.Direct3D11": "3.5.0"
+        },
+        "compile": {
+          "lib/net8.0/ClickableTransparentOverlay.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/ClickableTransparentOverlay.dll": {}
+        }
+      },
+      "Coroutine/2.1.5": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Coroutine.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Coroutine.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "ImGui.NET/1.91.6.1": {
+        "type": "package",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Numerics.Vectors": "4.5.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "compile": {
+          "lib/net8.0/ImGui.NET.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/ImGui.NET.dll": {
+            "related": ".xml"
+          }
+        },
+        "native": {
+          "runtimes/win-x64/native/cimgui.dll": {}
+        }
+      },
+      "Newtonsoft.Json/13.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "ProcessMemoryUtilities.Net/1.3.4": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/ProcessMemoryUtilities.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/ProcessMemoryUtilities.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "SharpGen.Runtime/2.1.2-beta": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/SharpGen.Runtime.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/SharpGen.Runtime.dll": {}
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "SharpGen.Runtime.COM/2.1.2-beta": {
+        "type": "package",
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta"
+        },
+        "compile": {
+          "lib/net8.0/SharpGen.Runtime.COM.dll": {}
+        },
+        "runtime": {
+          "lib/net8.0/SharpGen.Runtime.COM.dll": {}
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "SixLabors.ImageSharp/3.1.6": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        }
+      },
+      "System.Buffers/4.5.1": {
+        "type": "package",
+        "compile": {
+          "ref/netcoreapp2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/_._": {}
+        }
+      },
+      "System.Numerics.Vectors/4.5.0": {
+        "type": "package",
+        "compile": {
+          "ref/netcoreapp2.0/_._": {}
+        },
+        "runtime": {
+          "lib/netcoreapp2.0/_._": {}
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "buildTransitive/netcoreapp3.1/_._": {}
+        }
+      },
+      "Vortice.D3DCompiler/3.5.0": {
+        "type": "package",
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "Vortice.DirectX": "3.5.0"
+        },
+        "compile": {
+          "lib/net8.0/Vortice.D3DCompiler.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.D3DCompiler.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "Vortice.Direct3D11/3.5.0": {
+        "type": "package",
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "Vortice.DXGI": "3.5.0"
+        },
+        "compile": {
+          "lib/net8.0/Vortice.Direct3D11.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.Direct3D11.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "Vortice.DirectX/3.5.0": {
+        "type": "package",
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "SharpGen.Runtime.COM": "2.1.2-beta",
+          "Vortice.Mathematics": "1.7.8"
+        },
+        "compile": {
+          "lib/net8.0/Vortice.DirectX.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.DirectX.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "Vortice.DXGI/3.5.0": {
+        "type": "package",
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "Vortice.DirectX": "3.5.0"
+        },
+        "compile": {
+          "lib/net8.0/Vortice.DXGI.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.DXGI.dll": {
+            "related": ".xml"
+          }
+        },
+        "build": {
+          "build/_._": {}
+        },
+        "buildMultiTargeting": {
+          "buildMultiTargeting/_._": {}
+        }
+      },
+      "Vortice.Mathematics/1.7.8": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Vortice.Mathematics.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.Mathematics.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "GameHelper/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "ClickableTransparentOverlay": "11.1.0",
+          "Coroutine": "2.1.5",
+          "GameOffsets": "1.0.0",
+          "Newtonsoft.Json": "13.0.3",
+          "ProcessMemoryUtilities.Net": "1.3.4"
+        },
+        "compile": {
+          "bin/placeholder/GameHelper.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/GameHelper.dll": {}
+        }
+      },
+      "GameOffsets/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/GameOffsets.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/GameOffsets.dll": {}
+        }
+      }
     }
   },
   "libraries": {
@@ -776,6 +1069,11 @@
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "win-x64": {
+        "#import": []
       }
     }
   }
